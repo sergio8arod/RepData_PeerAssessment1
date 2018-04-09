@@ -5,18 +5,44 @@ output:
     keep_md: true
 ---
 
-```{R echo=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
+
 
 ## Loading and preprocessing the data
 With the following code I load the activity data and transform the date from a factor class to a date one.
-```{R}
+
+```r
 library(dplyr)
+```
+
+```
+## 
+## Attaching package: 'dplyr'
+```
+
+```
+## The following objects are masked from 'package:stats':
+## 
+##     filter, lag
+```
+
+```
+## The following objects are masked from 'package:base':
+## 
+##     intersect, setdiff, setequal, union
+```
+
+```r
 unzip("activity.zip")
 activity <- read.csv2("activity.csv", header=TRUE, sep = ",")
 activity <- mutate(activity, date=as.Date(as.character(date), "%Y-%m-%d"))
 str(activity)
+```
+
+```
+## 'data.frame':	17568 obs. of  3 variables:
+##  $ steps   : int  NA NA NA NA NA NA NA NA NA NA ...
+##  $ date    : Date, format: "2012-10-01" "2012-10-01" ...
+##  $ interval: int  0 5 10 15 20 25 30 35 40 45 ...
 ```
 
 ## What is mean total number of steps taken per day?
@@ -24,7 +50,8 @@ str(activity)
 2. Summarize the the date frame to get only the sum of steps per date (day)
 3. Plot the total steps by date in a histogram
 4. Get mean and median of steps per day
-```{R}
+
+```r
 activity_grp <- activity %>% group_by(date) #group the data frame by date
 steps_day <- summarise(activity_grp, steps=sum(steps, na.rm = TRUE)) #sum the steps by date
 stepsMean <- mean(steps_day$steps) #Finally get the mean of steps by day
@@ -35,31 +62,36 @@ barplot(steps_day$steps, names.arg = format(steps_day$date,"%d/%m"), xlab = "Day
 abline(h=stepsMean, col="red")
 abline(h=stepsMedian, col="blue")
 legend("top", legend = c("mean", "median"), col = c("red", "blue"), lty=1, cex = 0.6)
-
-
 ```
-The steps mean per day are `r stepsMean` and `r stepsMedian` is the median.
+
+![](PA1_template_files/figure-html/unnamed-chunk-3-1.png)<!-- -->
+The steps mean per day are 9354.2295082 and 10395 is the median.
 
 ## What is the average daily activity pattern?
 As in the previus analysis, I group the data frame and get the average steps for the 5-minute interval. The following plot show the pattern with the average steps along all days.
-```{R}
+
+```r
 interval_grp <- activity %>% group_by(interval)
 steps_interval <- summarise(interval_grp, steps=mean(steps, na.rm = TRUE))
 plot(steps_interval, type = "l", ylab="Average Steps", main="Average daily activty pattern")
 ```
 
-The maximun number of steps, on average across all the days in the dataset, are `r max(steps_interval$steps)` and correspond to the interval `r steps_interval$interval[steps_interval$steps==max(steps_interval$steps)]`
+![](PA1_template_files/figure-html/unnamed-chunk-4-1.png)<!-- -->
+
+The maximun number of steps, on average across all the days in the dataset, are 206.1698113 and correspond to the interval 835
 
 ## Imputing missing values
 
-```{R}
+
+```r
 missing_values <- which(is.na(activity$steps))
 ```
-So there are `r length(missing_values)` missing values.
+So there are 2304 missing values.
 
 If I replace the missing values with the average of the correponding 5-minute interval, how it would impact our first result.
 
-```{R}
+
+```r
 activity_fill <- activity #Save data frame to fill the NA
 for (i in 1:length(missing_values)){
     missingInterval <- activity_fill$interval[missing_values[i]] #Get the interval of the missing value
@@ -75,13 +107,15 @@ barplot(steps_day1$steps, names.arg = format(steps_day1$date,"%d/%m"), xlab = "D
 abline(h=stepsMean1, col="red")
 abline(h=stepsMedian1, col="blue")
 legend("top", legend = c("mean", "median"), col = c("red", "blue"), lty=1, cex = 0.6)
-
 ```
 
-So, the new steps mean per day is `r stepsMean1` and `r stepsMedian1` is the median. And we can see that simply dufference is that the mean and median are the same in the last analysis.
+![](PA1_template_files/figure-html/unnamed-chunk-6-1.png)<!-- -->
+
+So, the new steps mean per day is 1.0766189\times 10^{4} and 1.0766189\times 10^{4} is the median. And we can see that simply dufference is that the mean and median are the same in the last analysis.
 
 In the next plot we can compare side by side the differences on the two approaches.
-```{R}
+
+```r
 par(mfrow=c(1,2), mar=c(4,3,2,2))
 #ignoring missing values
 barplot(steps_day$steps, names.arg = format(steps_day$date,"%d/%m"), xlab = "Days", ylab = "Steps", main = "Ignoring missing values")
@@ -96,8 +130,11 @@ abline(h=stepsMedian1, col="blue")
 legend("top", legend = c("mean", "median"), col = c("red", "blue"), lty=1, cex = 0.6)
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-7-1.png)<!-- -->
+
 ## Are there differences in activity patterns between weekdays and weekends?
-```{R}
+
+```r
 library(ggplot2)
 activity_fill$daytype <- ifelse(weekdays(activity_fill$date) %in% c("sábado", "domingo"), "weekend", "weekday")
 activity_fill$daytype <- as.factor(activity_fill$daytype)
@@ -107,8 +144,10 @@ steps_interval1 <- summarise(interval_grp1, steps=mean(steps, na.rm = TRUE))
 qplot(interval, y=steps, data = steps_interval1, facets = daytype~., geom = "line")
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-8-1.png)<!-- -->
+
 There are difference, the main difference is that in the weekdays there is a notorious peak, which correspond with the maximum steps found in the first intervla analysis.
 
 Sergio Rodríguez
 
-`r Sys.Date()`
+2018-04-08
